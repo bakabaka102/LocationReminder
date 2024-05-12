@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="viewModel"
             type="com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel" />
@@ -34,11 +35,11 @@
                 android:id="@+id/noDataTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableTop="@drawable/ic_no_data"
                 android:fadeVisible="@{viewModel.showNoData.booleanValue()}"
                 android:gravity="center"
                 android:text="@string/no_data"
                 android:textSize="@dimen/text_size_large"
+                app:drawableTopCompat="@drawable/ic_no_data"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -60,6 +61,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/margin_normal"
+                android:backgroundTint="@color/colorPrimary"
+                android:contentDescription="@string/add_location"
                 android:src="@drawable/ic_add"
                 app:fabSize="normal"
                 app:layout_anchor="@id/reminderssRecyclerView"

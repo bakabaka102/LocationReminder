@@ -10,6 +10,10 @@ import android.view.ViewGroup
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Lifecycle
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.Marker
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
@@ -18,11 +22,14 @@ import com.udacity.project4.utils.ToastUtils
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 
-class SelectLocationFragment : BaseFragment() {
+class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     // Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
+    private lateinit var googleMap: GoogleMap
+    private var mapMarker: Marker? = null
+
     private val mMenuProvider = object : MenuProvider {
         override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
             menuInflater.inflate(R.menu.map_options, menu)
@@ -65,6 +72,10 @@ class SelectLocationFragment : BaseFragment() {
             Lifecycle.State.RESUMED
         )
         setDisplayHomeAsUpEnabled(true)
+        val mapFragment = childFragmentManager
+            .findFragmentById(R.id.mapFragment) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+
 
         // TODO: add the map setup implementation
         // TODO: zoom to the user location after taking his permission
@@ -72,13 +83,24 @@ class SelectLocationFragment : BaseFragment() {
         // TODO: put a marker to location that the user selected
 
         // TODO: call this function after the user confirms on the selected location
-        onLocationSelected()
+        //onLocationSelected()
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.btnSaveLocation.setOnClickListener {
+            onLocationSelected()
+        }
     }
 
     private fun onLocationSelected() {
         // TODO: When the user confirms on the selected location,
         //  send back the selected location details to the view model
         //  and navigate back to the previous fragment to save the reminder and add the geofence
+    }
+
+    override fun onMapReady(googleMap: GoogleMap) {
+        this.googleMap = googleMap
     }
 }
