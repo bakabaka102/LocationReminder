@@ -1,8 +1,17 @@
 package com.udacity.project4.authentication
 
+import android.app.Activity
+import android.content.Intent
+import androidx.activity.result.contract.ActivityResultContracts
+import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.IdpResponse
+import com.google.firebase.auth.FirebaseAuth
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseActivity
 import com.udacity.project4.databinding.ActivityAuthenticationBinding
+import com.udacity.project4.locationreminders.RemindersActivity
+import com.udacity.project4.utils.LogUtils
+import com.udacity.project4.utils.ToastUtils
 
 /**
  * This class should be the starting point of the app, It asks the users to sign in / register, and redirects the
@@ -10,9 +19,23 @@ import com.udacity.project4.databinding.ActivityAuthenticationBinding
  */
 class AuthenticationActivity : BaseActivity<ActivityAuthenticationBinding>() {
 
+    private val resultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val data: Intent? = result.data
+            val response = IdpResponse.fromResultIntent(data)
+            if (result.resultCode == Activity.RESULT_OK) {
+                LogUtils.i("User signed in: ${FirebaseAuth.getInstance().currentUser?.displayName}")
+                ToastUtils.showToast(this, "Successfully signed in!.")
+                startRemindersActivity()
+            } else {
+                LogUtils.i("Sign in unsuccessful ${response?.error?.errorCode}")
+                ToastUtils.showToast(this, "Sign in unsuccessful!.")
+            }
+        }
+
     /*override fun initViewBinding(): ActivityAuthenticationBinding {
-        return ActivityAuthenticationBinding.inflate(layoutInflater)
-    }*/
+            return ActivityAuthenticationBinding.inflate(layoutInflater)
+        }*/
 
     override fun initLayoutId(): Int {
         return R.layout.activity_authentication
@@ -27,6 +50,27 @@ class AuthenticationActivity : BaseActivity<ActivityAuthenticationBinding>() {
     }
 
     override fun initActions() {
+        mBinding.btnLogin.setOnClickListener {
+            val providers = arrayListOf(
+                AuthUI.IdpConfig.EmailBuilder().build(), AuthUI.IdpConfig.GoogleBuilder().build()
+            )
+            val build = AuthUI.getInstance()
+                .createSignInIntentBuilder()
+                .setAvailableProviders(providers)
+                .build()
+            resultLauncher.launch(build)
 
+        }
+    }
+
+    private fun startRemindersActivity() {
+        val intent = Intent(this, RemindersActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        ToastUtils.cancelToast()
     }
 }
