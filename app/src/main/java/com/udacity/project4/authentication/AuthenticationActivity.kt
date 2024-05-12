@@ -51,14 +51,15 @@ class AuthenticationActivity : BaseActivity<ActivityAuthenticationBinding>() {
 
     override fun initActions() {
         mBinding.btnLogin.setOnClickListener {
-            val providers = arrayListOf(
+            startRemindersActivity()
+            /*val providers = arrayListOf(
                 AuthUI.IdpConfig.EmailBuilder().build(), AuthUI.IdpConfig.GoogleBuilder().build()
             )
-            val build = AuthUI.getInstance()
+            val authIntent: Intent = AuthUI.getInstance()
                 .createSignInIntentBuilder()
                 .setAvailableProviders(providers)
                 .build()
-            resultLauncher.launch(build)
+            resultLauncher.launch(authIntent)*/
 
         }
     }

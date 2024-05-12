@@ -2,6 +2,7 @@ package com.udacity.project4.locationreminders
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseActivity
 import com.udacity.project4.databinding.ActivityReminderDescriptionBinding
@@ -32,7 +33,13 @@ class ReminderDescriptionActivity : BaseActivity<ActivityReminderDescriptionBind
     }
 
     override fun initViews() {
-
+        val reminderData = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.extras?.getParcelable(EXTRA_REMINDER_ITEM, ReminderDataItem::class.java)
+        } else {
+            intent.extras?.get(EXTRA_REMINDER_ITEM) as ReminderDataItem
+        }
+        mBinding.reminderDataItem = reminderData
+        mBinding.lifecycleOwner = this
     }
 
     override fun initActions() {

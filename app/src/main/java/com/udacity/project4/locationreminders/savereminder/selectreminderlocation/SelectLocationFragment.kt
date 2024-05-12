@@ -1,12 +1,20 @@
 package com.udacity.project4.locationreminders.savereminder.selectreminderlocation
 
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Lifecycle
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
+import com.udacity.project4.utils.ToastUtils
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 
@@ -15,6 +23,33 @@ class SelectLocationFragment : BaseFragment() {
     // Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
+    private val mMenuProvider = object : MenuProvider {
+        override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+            menuInflater.inflate(R.menu.map_options, menu)
+        }
+
+        override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
+            // TODO: Change the map type based on the user's selection.
+            R.id.normal_map -> {
+                ToastUtils.showToast(requireActivity(), "Logout")
+                true
+            }
+
+            R.id.hybrid_map -> {
+                true
+            }
+
+            R.id.satellite_map -> {
+                true
+            }
+
+            R.id.terrain_map -> {
+                true
+            }
+
+            else -> true
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -24,8 +59,11 @@ class SelectLocationFragment : BaseFragment() {
 
         binding.viewModel = _viewModel
         binding.lifecycleOwner = this
-
-        setHasOptionsMenu(true)
+        requireActivity().addMenuProvider(
+            mMenuProvider,
+            viewLifecycleOwner,
+            Lifecycle.State.RESUMED
+        )
         setDisplayHomeAsUpEnabled(true)
 
         // TODO: add the map setup implementation
@@ -42,26 +80,5 @@ class SelectLocationFragment : BaseFragment() {
         // TODO: When the user confirms on the selected location,
         //  send back the selected location details to the view model
         //  and navigate back to the previous fragment to save the reminder and add the geofence
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.map_options, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-        // TODO: Change the map type based on the user's selection.
-        R.id.normal_map -> {
-            true
-        }
-        R.id.hybrid_map -> {
-            true
-        }
-        R.id.satellite_map -> {
-            true
-        }
-        R.id.terrain_map -> {
-            true
-        }
-        else -> super.onOptionsItemSelected(item)
     }
 }
