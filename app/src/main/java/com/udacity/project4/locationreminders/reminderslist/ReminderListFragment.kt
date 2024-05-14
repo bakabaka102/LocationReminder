@@ -79,7 +79,12 @@ class ReminderListFragment : BaseFragment() {
             viewLifecycleOwner,
             Lifecycle.State.RESUMED
         )
-        binding.refreshLayout.setOnRefreshListener { _viewModel.loadReminders() }
+        binding.refreshLayout.apply {
+            setOnRefreshListener {
+                _viewModel.loadReminders()
+                isRefreshing = false
+            }
+        }
         return binding.root
     }
 
