@@ -3,21 +3,16 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.location.LocationManager
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuProvider
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Lifecycle
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -37,15 +32,15 @@ import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 import java.util.Locale
 
-class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
+class SelectLocationFragment : BaseFragment<FragmentSelectLocationBinding>(), OnMapReadyCallback {
 
     // Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
-    private lateinit var binding: FragmentSelectLocationBinding
+    override fun layoutViewDataBinding(): Int = R.layout.fragment_select_location
+
     private lateinit var googleMap: GoogleMap
     private var mapMarker: Marker? = null
     private var permissionLocationGranted = false
-    private var locationManager: LocationManager? = null
     private var isEnableGPS = false
     private val activityResultLauncher: ActivityResultLauncher<Array<String>> =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
@@ -113,30 +108,25 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         const val DEFAULT_ZOOM_MAP_LEVEL = 16F
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        val layoutId = R.layout.fragment_select_location
-        binding = DataBindingUtil.inflate(inflater, layoutId, container, false)
+    override fun initData(data: Bundle?) {
+        mBinding.viewModel = _viewModel
+        mBinding.lifecycleOwner = this
+        setDisplayHomeAsUpEnabled(true)
+    }
 
-        binding.viewModel = _viewModel
-        binding.lifecycleOwner = this
+    override fun initViews() {
         requireActivity().addMenuProvider(
             mMenuProvider,
             viewLifecycleOwner,
             Lifecycle.State.RESUMED
         )
-        setDisplayHomeAsUpEnabled(true)
         val mapFragment = childFragmentManager
             .findFragmentById(R.id.mapFragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
-
-        return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.btnSaveLocation.setOnClickListener {
+    override fun initActions() {
+        mBinding.btnSaveLocation.setOnClickListener {
             // TODO: add the map setup implementation
             // TODO: zoom to the user location after taking his permission
             // TODO: add style to the map
@@ -144,6 +134,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             // TODO: call this function after the user confirms on the selected location
             onLocationSelected()
         }
+    }
+
+    override fun initObservers() {
+
     }
 
     private fun onLocationSelected() {

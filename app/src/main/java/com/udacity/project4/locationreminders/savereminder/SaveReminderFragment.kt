@@ -1,10 +1,6 @@
 package com.udacity.project4.locationreminders.savereminder
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
@@ -13,36 +9,38 @@ import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 
-class SaveReminderFragment : BaseFragment() {
+class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
 
     // Get the view model this time as a single to be shared with the another fragment
     private lateinit var reminderDataItem: ReminderDataItem
 
     override val _viewModel: SaveReminderViewModel by inject()
-    private lateinit var binding: FragmentSaveReminderBinding
+    override fun layoutViewDataBinding(): Int = R.layout.fragment_save_reminder
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        val layoutId = R.layout.fragment_save_reminder
-        binding = DataBindingUtil.inflate(inflater, layoutId, container, false)
-
-        setDisplayHomeAsUpEnabled(true)
-        binding.viewModel = _viewModel
-        return binding.root
+    override fun onDestroy() {
+        super.onDestroy()
+        // Make sure to clear the view model after destroy, as it's a single view model.
+        _viewModel.onClear()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding.lifecycleOwner = this
-        binding.selectLocation.setOnClickListener {
+    override fun initData(data: Bundle?) {
+        setDisplayHomeAsUpEnabled(true)
+        mBinding.viewModel = _viewModel
+    }
+
+    override fun initViews() {
+        mBinding.lifecycleOwner = this
+    }
+
+    override fun initActions() {
+        mBinding.selectLocation.setOnClickListener {
             // Navigate to another fragment to get the user location
             val directions = SaveReminderFragmentDirections
                 .actionSaveReminderFragmentToSelectLocationFragment()
             _viewModel.navigationCommand.value = NavigationCommand.To(directions)
         }
 
-        binding.saveReminder.setOnClickListener {
+        mBinding.saveReminder.setOnClickListener {
             val title = _viewModel.reminderTitle.value
             val description = _viewModel.reminderDescription.value
             val location = _viewModel.reminderSelectedLocationStr.value
@@ -54,13 +52,9 @@ class SaveReminderFragment : BaseFragment() {
             //  2) save the reminder to the local db
             reminderDataItem = ReminderDataItem(title, description, location, latitude, longitude)
             _viewModel.validateAndSaveReminder(reminderDataItem)
-
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        // Make sure to clear the view model after destroy, as it's a single view model.
-        _viewModel.onClear()
+    override fun initObservers() {
     }
 }
