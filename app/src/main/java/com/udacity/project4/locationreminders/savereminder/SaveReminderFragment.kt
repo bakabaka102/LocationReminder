@@ -51,7 +51,9 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
             //  1) add a geofencing request
             //  2) save the reminder to the local db
             reminderDataItem = ReminderDataItem(title, description, location, latitude, longitude)
-            _viewModel.validateAndSaveReminder(reminderDataItem)
+            if (_viewModel.validateEnteredData(reminderDataItem)) {
+                _viewModel.saveReminder(reminderDataItem)
+            }
         }
     }
 

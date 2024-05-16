@@ -52,16 +52,20 @@ class AuthenticationActivity : BaseActivity<ActivityAuthenticationBinding>() {
     override fun initActions() {
         mBinding.btnLogin.setOnClickListener {
             startRemindersActivity()
-            /*val providers = arrayListOf(
-                AuthUI.IdpConfig.EmailBuilder().build(), AuthUI.IdpConfig.GoogleBuilder().build()
-            )
-            val authIntent: Intent = AuthUI.getInstance()
-                .createSignInIntentBuilder()
-                .setAvailableProviders(providers)
-                .build()
-            resultLauncher.launch(authIntent)*/
+            //launchSignInFlow()
 
         }
+    }
+
+    private fun launchSignInFlow() {
+        val providers = arrayListOf(
+            AuthUI.IdpConfig.EmailBuilder().build(), AuthUI.IdpConfig.GoogleBuilder().build()
+        )
+        val authIntent: Intent = AuthUI.getInstance()
+            .createSignInIntentBuilder()
+            .setAvailableProviders(providers)
+            .build()
+        resultLauncher.launch(authIntent)
     }
 
     private fun startRemindersActivity() {
