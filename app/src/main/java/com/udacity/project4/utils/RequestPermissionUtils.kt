@@ -1,5 +1,6 @@
 package com.udacity.project4.utils
 
+import android.Manifest
 import android.Manifest.permission
 import android.content.Context
 import android.content.pm.PackageManager
@@ -38,3 +39,10 @@ fun Context.isPermissionLocationGranted(): Boolean {
     ) == PackageManager.PERMISSION_GRANTED)
 }
 
+
+fun Context.isPostNotificationEnable(): Boolean {
+    return ActivityCompat.checkSelfPermission(
+        this,
+        permission.POST_NOTIFICATIONS
+    ) == PackageManager.PERMISSION_GRANTED
+}

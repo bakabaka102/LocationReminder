@@ -78,11 +78,6 @@ class ReminderListFragment : BaseFragment<FragmentRemindersBinding>() {
         mBinding.reminderssRecyclerView.setup(adapter)
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        ToastUtils.cancelToast()
-    }
-
     override fun initData(data: Bundle?) {
         mBinding.viewModel = _viewModel
         setDisplayHomeAsUpEnabled(false)

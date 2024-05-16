@@ -73,9 +73,4 @@ class AuthenticationActivity : BaseActivity<ActivityAuthenticationBinding>() {
         startActivity(intent)
         finish()
     }
-
-    override fun onStop() {
-        super.onStop()
-        ToastUtils.cancelToast()
-    }
 }

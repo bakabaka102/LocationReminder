@@ -10,6 +10,7 @@ import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import com.udacity.project4.utils.ToastUtils
 
 /**
  * Base Fragment to observe on the common LiveData objects
@@ -41,6 +42,11 @@ abstract class BaseFragment<VDB : ViewDataBinding> : Fragment(), IBaseFragment {
         initViews()
         initActions()
         initObservers()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        ToastUtils.cancelToast()
     }
 
     override fun onStart() {
