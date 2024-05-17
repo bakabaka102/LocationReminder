@@ -51,8 +51,8 @@ class AuthenticationActivity : BaseActivity<ActivityAuthenticationBinding>() {
 
     override fun initActions() {
         mBinding.btnLogin.setOnClickListener {
-            startRemindersActivity()
-            //launchSignInFlow()
+            //startRemindersActivity()
+            launchSignInFlow()
 
         }
     }

@@ -17,7 +17,8 @@ import com.udacity.project4.utils.ToastUtils
  */
 abstract class BaseFragment<VDB : ViewDataBinding> : Fragment(), IBaseFragment {
 
-    protected lateinit var mBinding: VDB
+    private var _mBinding: VDB? = null
+    protected val mBinding: VDB get() = _mBinding!!
 
     /**
      * Every fragment has to have an instance of a view model that extends from the BaseViewModel
@@ -31,7 +32,7 @@ abstract class BaseFragment<VDB : ViewDataBinding> : Fragment(), IBaseFragment {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        mBinding =
+        _mBinding =
             DataBindingUtil.inflate(layoutInflater, layoutViewDataBinding(), container, false)
         initData(arguments)
         return mBinding.root
@@ -46,6 +47,7 @@ abstract class BaseFragment<VDB : ViewDataBinding> : Fragment(), IBaseFragment {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _mBinding = null
         ToastUtils.cancelToast()
     }
 

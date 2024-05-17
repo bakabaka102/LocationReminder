@@ -17,9 +17,7 @@ import androidx.lifecycle.Lifecycle
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -178,32 +176,6 @@ class SelectLocationFragment : BaseFragment<FragmentSelectLocationBinding>(), On
         this.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, zoom))
     }
 
-    /*private fun requestGPSOn() {
-        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 100)
-            .setWaitForAccurateLocation(false)
-            .setMinUpdateIntervalMillis(3000)
-            .setMaxUpdateDelayMillis(300)
-            .build()
-        val settingsRequest = LocationSettingsRequest.Builder()
-            .addLocationRequest(locationRequest)
-            .build()
-        LocationServices.getSettingsClient(requireActivity())
-            .checkLocationSettings(settingsRequest)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    ToastUtils.showToast(requireActivity(), "isSuccessful")
-                } else {
-                    val ex = task.exception
-                    if (ex is ResolvableApiException) {
-                        ToastUtils.showToast(requireActivity(), "ResolvableApiException exception")
-                    } else {
-                        //Location can not be resolved, inform the user
-                        ToastUtils.showToast(requireActivity(), "Other exception")
-                    }
-                }
-            }
-    }*/
-
     @SuppressLint("MissingPermission")
     private fun turnOnMyLocation() {
         val fusedLocationClient: FusedLocationProviderClient? =
@@ -211,21 +183,17 @@ class SelectLocationFragment : BaseFragment<FragmentSelectLocationBinding>(), On
                 LocationServices.getFusedLocationProviderClient(it)
             }
         val lastLocation = fusedLocationClient?.lastLocation
-        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
+        /*val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
             .setWaitForAccurateLocation(false)
             .setMinUpdateIntervalMillis(3000)
             .setMaxUpdateDelayMillis(300)
-            .build()
+            .build()*/
+        val locationRequest = LocationRequest.create().apply {
+            priority = LocationRequest.PRIORITY_LOW_POWER
+        }
         if (activity?.isAccessFineLocation() == true) {
             googleMap.isMyLocationEnabled = true
-            val onCallback = object : LocationCallback() {
-                override fun onLocationResult(locationResult: LocationResult) {
-                    /* locationResult ?: return
-                     for (location in locationResult.locations) {
-
-                     }*/
-                }
-            }
+            val onCallback = object : LocationCallback() {}
             fusedLocationClient?.requestLocationUpdates(
                 locationRequest,
                 onCallback,
