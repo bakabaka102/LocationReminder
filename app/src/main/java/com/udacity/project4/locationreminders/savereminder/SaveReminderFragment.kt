@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.IntentSender
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.common.api.ResolvableApiException
@@ -174,12 +173,10 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
         if (geofencingRequest != null) {
             geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
                 addOnSuccessListener {
-                    Log.e("Add Geofence", geofence.requestId)
+                    LogUtils.d("Add Geofence ${geofence.requestId}")
                 }
                 addOnFailureListener {
-                    if ((it.message != null)) {
-                        Log.w("Add Geofence", it.message!!)
-                    }
+                    LogUtils.e("Add Geofence Failure ${it.message}")
                 }
             }
         }
@@ -197,17 +194,17 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
     }
 
     private fun requestForegroundAndBackgroundLocationPermissions() {
-        var permissionsArray = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+        val permissions = mutableListOf(Manifest.permission.ACCESS_FINE_LOCATION)
         val resultCode = when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
-                permissionsArray += Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                permissions.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                 REQUEST_CODE_29
             }
 
             else -> REQUEST_CODE_33
         }
         LogUtils.d("Request foreground only location permission")
-        ActivityCompat.requestPermissions(requireActivity(), permissionsArray, resultCode)
+        ActivityCompat.requestPermissions(requireActivity(), permissions.toTypedArray(), resultCode)
     }
 
 }

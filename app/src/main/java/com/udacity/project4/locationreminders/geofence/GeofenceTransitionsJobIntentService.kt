@@ -36,6 +36,7 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
         // TODO: handle the geofencing transition events and
         //  send a notification to the user when he enters the geofence area
         // TODO call @sendNotification
+
     }
 
     // TODO: get the request id of the current geofence
