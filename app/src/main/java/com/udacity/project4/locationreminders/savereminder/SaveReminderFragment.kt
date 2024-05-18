@@ -51,6 +51,9 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
         const val REQUEST_TURN_DEVICE_LOCATION_ON = 1001
         const val GEOFENCE_RADIUS = 100f
         const val ACTION_GEOFENCE_EVENT = "geofence.action.ACTION_GEOFENCE_EVENT"
+        const val REQUEST_CODE_29 = 29
+        const val REQUEST_CODE_33 = 33
+
     }
 
     // Get the view model this time as a single to be shared with the another fragment
@@ -153,21 +156,30 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
 
     @SuppressLint("MissingPermission")
     private fun addGeofenceForClue() {
-        val geofence = Geofence.Builder().setRequestId(reminderDataItem.id).setCircularRegion(
-            reminderDataItem.latitude!!, reminderDataItem.longitude!!, GEOFENCE_RADIUS
-        ).setExpirationDuration(Geofence.NEVER_EXPIRE)
-            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER).build()
-
-        val geofencingRequest = GeofencingRequest.Builder()
-            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
-            .addGeofence(geofence).build()
-        geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
-            addOnSuccessListener {
-                Log.e("Add Geofence", geofence.requestId)
+        val geofence =
+            reminderDataItem.latitude?.let { latitude ->
+                reminderDataItem.longitude?.let { longitude ->
+                    Geofence.Builder().setRequestId(reminderDataItem.id)
+                        .setCircularRegion(latitude, longitude, GEOFENCE_RADIUS)
+                        .setExpirationDuration(Geofence.NEVER_EXPIRE)
+                        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER).build()
+                }
             }
-            addOnFailureListener {
-                if ((it.message != null)) {
-                    Log.w("Add Geofence", it.message!!)
+
+        val geofencingRequest = geofence?.let {
+            GeofencingRequest.Builder()
+                .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+                .addGeofence(it).build()
+        }
+        if (geofencingRequest != null) {
+            geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
+                addOnSuccessListener {
+                    Log.e("Add Geofence", geofence.requestId)
+                }
+                addOnFailureListener {
+                    if ((it.message != null)) {
+                        Log.w("Add Geofence", it.message!!)
+                    }
                 }
             }
         }
@@ -189,65 +201,13 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
         val resultCode = when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
                 permissionsArray += Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                33
+                REQUEST_CODE_29
             }
 
-            else -> 34
+            else -> REQUEST_CODE_33
         }
         LogUtils.d("Request foreground only location permission")
         ActivityCompat.requestPermissions(requireActivity(), permissionsArray, resultCode)
     }
-
-    /*private fun addGeofenceForClue() {
-        if (viewModel.geofenceIsActive()) return
-        val currentGeofenceIndex = viewModel.nextGeofenceIndex()
-        if (currentGeofenceIndex >= GeofencingConstants.NUM_LANDMARKS) {
-            removeGeofences()
-            viewModel.geofenceActivated()
-            return
-        }
-        val currentGeofenceData = GeofencingConstants.LANDMARK_DATA[currentGeofenceIndex]
-
-        val geofence = Geofence.Builder()
-            .setRequestId(currentGeofenceData.id)
-            .setCircularRegion(
-                currentGeofenceData.latLong.latitude,
-                currentGeofenceData.latLong.longitude,
-                GeofencingConstants.GEOFENCE_RADIUS_IN_METERS
-            )
-            .setExpirationDuration(GeofencingConstants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
-            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-            .build()
-
-        val geofencingRequest = GeofencingRequest.Builder()
-            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
-            .addGeofence(geofence)
-            .build()
-
-        geofencingClient.removeGeofences(geofencePendingIntent)?.run {
-            addOnCompleteListener {
-                geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)?.run {
-                    addOnSuccessListener {
-                        Toast.makeText(
-                            this@HuntMainActivity, R.string.geofences_added,
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
-                        Log.e("Add Geofence", geofence.requestId)
-                        viewModel.geofenceActivated()
-                    }
-                    addOnFailureListener {
-                        Toast.makeText(
-                            this@HuntMainActivity, R.string.geofences_not_added,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        if ((it.message != null)) {
-                            Log.w(TAG, it.message)
-                        }
-                    }
-                }
-            }
-        }
-    }*/
 
 }

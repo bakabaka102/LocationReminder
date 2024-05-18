@@ -46,4 +46,5 @@
     <string name="error_adding_geofence">Error Happened, Can\'t Add Geofence</string>
     <string name="add_location">Add location</string>
     <string name="error_location_required">Require Location services must be enabled</string>
+    <string name="geofences_added">The geofence is added</string>
 </resources>
