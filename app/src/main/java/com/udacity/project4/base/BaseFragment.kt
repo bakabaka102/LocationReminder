@@ -10,13 +10,15 @@ import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import com.udacity.project4.utils.ToastUtils
 
 /**
  * Base Fragment to observe on the common LiveData objects
  */
 abstract class BaseFragment<VDB : ViewDataBinding> : Fragment(), IBaseFragment {
 
-    protected lateinit var mBinding: VDB
+    private var _mBinding: VDB? = null
+    protected val mBinding: VDB get() = _mBinding!!
 
     /**
      * Every fragment has to have an instance of a view model that extends from the BaseViewModel
@@ -30,7 +32,7 @@ abstract class BaseFragment<VDB : ViewDataBinding> : Fragment(), IBaseFragment {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        mBinding =
+        _mBinding =
             DataBindingUtil.inflate(layoutInflater, layoutViewDataBinding(), container, false)
         initData(arguments)
         return mBinding.root
@@ -41,6 +43,12 @@ abstract class BaseFragment<VDB : ViewDataBinding> : Fragment(), IBaseFragment {
         initViews()
         initActions()
         initObservers()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _mBinding = null
+        ToastUtils.cancelToast()
     }
 
     override fun onStart() {

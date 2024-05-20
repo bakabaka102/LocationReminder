@@ -42,36 +42,34 @@ class AuthenticationActivity : BaseActivity<ActivityAuthenticationBinding>() {
     }
 
     override fun initViews() {
+
+    }
+
+    override fun initActions() {
         // TODO: Implement the create account and sign in using FirebaseUI,
         //  use sign in using email and sign in using Google
         // TODO: If the user was authenticated, send him to RemindersActivity
         // TODO: a bonus is to customize the sign in flow to look nice using :
         //https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md#custom-layout
+        mBinding.btnLogin.setOnClickListener {
+            launchSignInFlow()
+        }
     }
 
-    override fun initActions() {
-        mBinding.btnLogin.setOnClickListener {
-            startRemindersActivity()
-            /*val providers = arrayListOf(
-                AuthUI.IdpConfig.EmailBuilder().build(), AuthUI.IdpConfig.GoogleBuilder().build()
-            )
-            val authIntent: Intent = AuthUI.getInstance()
-                .createSignInIntentBuilder()
-                .setAvailableProviders(providers)
-                .build()
-            resultLauncher.launch(authIntent)*/
-
-        }
+    private fun launchSignInFlow() {
+        val providers = arrayListOf(
+            AuthUI.IdpConfig.EmailBuilder().build(), AuthUI.IdpConfig.GoogleBuilder().build()
+        )
+        val authIntent: Intent = AuthUI.getInstance()
+            .createSignInIntentBuilder()
+            .setAvailableProviders(providers)
+            .build()
+        resultLauncher.launch(authIntent)
     }
 
     private fun startRemindersActivity() {
         val intent = Intent(this, RemindersActivity::class.java)
         startActivity(intent)
         finish()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        ToastUtils.cancelToast()
     }
 }

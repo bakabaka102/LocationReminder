@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.viewbinding.ViewBinding
+import com.udacity.project4.utils.ToastUtils
 
 abstract class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
 
@@ -24,6 +25,11 @@ abstract class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
         setContentView(mBinding.root)
         initViews()
         initActions()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        ToastUtils.cancelToast()
     }
 
 }
