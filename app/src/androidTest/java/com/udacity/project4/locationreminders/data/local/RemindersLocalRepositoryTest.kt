@@ -44,22 +44,22 @@ class RemindersLocalRepositoryTest {
     }
 
     @Test
-    fun testGetRemindersWithError() = runTest {
+    fun getRemindersError() = runTest {
         assertThat(
-            remindersLocalRepository?.getReminder("xxx"),
+            remindersLocalRepository?.getReminder("NA_ID"),
             `is`(Result.Error("Reminder not found!"))
         )
     }
 
     @Test
-    fun testInsertGetRemindersSuccess() = runTest {
+    fun insertGetRemindersSuccess() = runTest {
         remindersLocalRepository?.saveReminder(data)
         val actual = remindersLocalRepository?.getReminder(data.id)
         assertThat(actual, `is`(Result.Success(data)))
     }
 
     @Test
-    fun testInsertGetAllRemindersSuccess() = runTest {
+    fun insertGetAllRemindersSuccess() = runTest {
         remindersLocalRepository?.saveReminder(data)
         remindersLocalRepository?.saveReminder(data2)
         val actual = remindersLocalRepository?.getReminders()
@@ -67,7 +67,7 @@ class RemindersLocalRepositoryTest {
     }
 
     @Test
-    fun testDeleteSuccess() = runTest {
+    fun deleteSuccess() = runTest {
         remindersLocalRepository?.saveReminder(data)
         remindersLocalRepository?.deleteAllReminders()
         val actual = remindersLocalRepository?.getReminders()
