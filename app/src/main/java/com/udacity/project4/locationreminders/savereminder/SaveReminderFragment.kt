@@ -18,6 +18,7 @@ import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.Priority
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
@@ -121,12 +122,12 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
     override fun initObservers() {
     }
 
-    /*    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-            super.onActivityResult(requestCode, resultCode, data)
-            if (requestCode == REQUEST_TURN_DEVICE_LOCATION_ON) {
-                checkDeviceLocationSettingsAndStartGeofence(false)
-            }
-        }*/
+    /*override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK) {
+            checkDeviceLocationSettingsAndStartGeofence(dataItem = _viewModel.getReminderDataItem())
+        }
+    }*/
 
     private fun checkPermissionsAndAddGeofencing() {
         if (activity?.isAccessFineLocation() == true && activity?.isBackgroundLocationEnable() == true) {
@@ -140,14 +141,11 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
         resolve: Boolean = true,
         dataItem: ReminderDataItem
     ) {
-        val locationRequest = LocationRequest.create().apply {
-            priority = LocationRequest.PRIORITY_LOW_POWER
-        }
-        /*val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 500)
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 500)
             .setWaitForAccurateLocation(false)
             .setMinUpdateIntervalMillis(3000)
             .setMaxUpdateDelayMillis(300)
-            .build()*/
+            .build()
         val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
         val settingsClient = LocationServices.getSettingsClient(mContext)
         val locationSettingsResponseTask = settingsClient.checkLocationSettings(builder.build())
@@ -157,9 +155,6 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
                     val intentSenderRequest =
                         IntentSenderRequest.Builder(exception.resolution).build()
                     resultLauncherGPS.launch(intentSenderRequest)
-                    /*activity?.let {
-                        exception.startResolutionForResult(it, REQUEST_TURN_DEVICE_LOCATION_ON)
-                    }*/
                 } catch (ex: IntentSender.SendIntentException) {
                     LogUtils.e("Error getting location settings --- ${ex.message}")
                 }
@@ -232,7 +227,7 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
 
             else -> REQUEST_CODE_33
         }
-        LogUtils.d("Request foreground only location permission")
+        LogUtils.d("Request foreground, background location permission")
         requestPermissions(permissions.toTypedArray(), resultCode)
     }
 
