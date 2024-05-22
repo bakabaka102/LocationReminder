@@ -5,10 +5,11 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth
 import com.udacity.project4.locationreminders.data.FakeDataSource
-import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import org.hamcrest.MatcherAssert
+import org.hamcrest.Matchers
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -20,13 +21,8 @@ import kotlin.test.assertEquals
 @ExperimentalCoroutinesApi
 class RemindersListViewModelTest : TestWatcher() {
 
-    //TODO: provide testing to the RemindersListViewModel and its live data objects
-
     private var viewModel: RemindersListViewModel? = null
     private var dataSourceTest: FakeDataSource = FakeDataSource()
-    private val dataTest = ReminderDTO(
-        "Data Title", "Data description", "Data location", 12345.0, 12345.0
-    )
 
     @get:Rule
     var instantExecutorRule = InstantTaskExecutorRule()
@@ -38,17 +34,30 @@ class RemindersListViewModelTest : TestWatcher() {
     }
 
     @Test
-    fun testLoadingData() = TestScope().runTest {
-        dataSourceTest.saveReminder(dataTest)
+    fun loadingIcon_Task() = TestScope().runTest {
         viewModel?.loadReminders()
-        Truth.assertThat(viewModel?.showLoading?.value).isTrue()
-        Truth.assertThat(viewModel?.showLoading?.value).isFalse()
+        MatcherAssert.assertThat(viewModel?.showLoading?.value, Matchers.`is`(true))
+        MatcherAssert.assertThat(viewModel?.showLoading?.value, Matchers.`is`(false))
     }
 
     @Test
-    fun testInternalError() = TestScope().runTest {
+    fun loadingNoData() = TestScope().runTest {
         dataSourceTest.deleteAllReminders()
         viewModel?.loadReminders()
-        assertEquals("Internal errors while getting reminders", viewModel?.showSnackBar?.value)
+        Truth.assertThat(viewModel?.showNoData?.value).isEqualTo(true)
+    }
+
+    @Test
+    fun loadingDataSuccess() = TestScope().runTest {
+        dataSourceTest.deleteAllReminders()
+        viewModel?.loadReminders()
+        Truth.assertThat(viewModel?.showNoData?.value).isEqualTo(true)
+    }
+
+    @Test
+    fun isReturnError() = TestScope().runTest {
+        dataSourceTest.setIsReturnError(true)
+        viewModel?.loadReminders()
+        assertEquals("Errors while getting reminders", viewModel?.showSnackBar?.value)
     }
 }
