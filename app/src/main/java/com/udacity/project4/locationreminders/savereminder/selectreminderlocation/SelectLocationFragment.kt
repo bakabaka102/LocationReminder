@@ -11,13 +11,13 @@ import android.view.MenuItem
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.core.app.ActivityCompat
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -35,8 +35,8 @@ import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.LogUtils
 import com.udacity.project4.utils.isAccessFineLocation
-import com.udacity.project4.utils.isPermissionLocationGranted
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
+import com.udacity.project4.utils.shouldAccessLocationRationale
 import org.koin.android.ext.android.inject
 import java.util.Locale
 
@@ -116,11 +116,6 @@ class SelectLocationFragment : BaseFragment<FragmentSelectLocationBinding>(), On
 
     override fun initActions() {
         mBinding.btnSaveLocation.setOnClickListener {
-            // TODO: add the map setup implementation
-            // TODO: zoom to the user location after taking his permission
-            // TODO: add style to the map
-            // TODO: put a marker to location that the user selected
-            // TODO: call this function after the user confirms on the selected location
             onLocationSelected()
         }
     }
@@ -130,9 +125,6 @@ class SelectLocationFragment : BaseFragment<FragmentSelectLocationBinding>(), On
     }
 
     private fun onLocationSelected() {
-        // TODO: When the user confirms on the selected location,
-        //  send back the selected location details to the view model
-        //  and navigate back to the previous fragment to save the reminder and add the geofence
         _viewModel.latitude.value = mapMarker?.position?.latitude
         _viewModel.longitude.value = mapMarker?.position?.longitude
         _viewModel.reminderSelectedLocationStr.value = mapMarker?.title
@@ -144,20 +136,15 @@ class SelectLocationFragment : BaseFragment<FragmentSelectLocationBinding>(), On
         googleMap.setMapStyle()
         googleMap.setMapLongClick()
         googleMap.setPoiClick()
-        if (activity?.isPermissionLocationGranted() == true) {
-            turnOnMyLocation()
+        if (activity?.isAccessFineLocation() == true) {
+            accessCurrentLocation()
         } else {
             showDialogRequestPermission()
         }
     }
 
     private fun showDialogRequestPermission() {
-        if (
-            ActivityCompat.shouldShowRequestPermissionRationale(
-                requireActivity(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
-        ) {
+        if (requireActivity().shouldAccessLocationRationale()) {
             AlertDialog.Builder(requireActivity())
                 .setTitle(R.string.location_permission)
                 .setMessage(R.string.permission_denied_explanation)
@@ -167,9 +154,9 @@ class SelectLocationFragment : BaseFragment<FragmentSelectLocationBinding>(), On
                 .create()
                 .show()
 
-        } else {
+        }/* else {
             activityResultLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
-        }
+        }*/
     }
 
     private fun GoogleMap.moveCamera(userLocation: LatLng, zoom: Float = DEFAULT_ZOOM_MAP_LEVEL) {
@@ -177,38 +164,31 @@ class SelectLocationFragment : BaseFragment<FragmentSelectLocationBinding>(), On
     }
 
     @SuppressLint("MissingPermission")
-    private fun turnOnMyLocation() {
+    private fun accessCurrentLocation() {
+        googleMap.isMyLocationEnabled = true
         val fusedLocationClient: FusedLocationProviderClient? =
             activity?.let {
                 LocationServices.getFusedLocationProviderClient(it)
             }
         val lastLocation = fusedLocationClient?.lastLocation
-        /*val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
             .setWaitForAccurateLocation(false)
             .setMinUpdateIntervalMillis(3000)
             .setMaxUpdateDelayMillis(300)
-            .build()*/
-        val locationRequest = LocationRequest.create().apply {
-            priority = LocationRequest.PRIORITY_LOW_POWER
-        }
-        if (activity?.isAccessFineLocation() == true) {
-            googleMap.isMyLocationEnabled = true
-            val onCallback = object : LocationCallback() {}
-            fusedLocationClient?.requestLocationUpdates(
-                locationRequest,
-                onCallback,
-                Looper.getMainLooper()
-            )
-            lastLocation?.addOnSuccessListener {
-                it?.let { location ->
-                    val userLocation = LatLng(location.latitude, location.longitude)
-                    googleMap.moveCamera(userLocation)
-                    googleMap.markerMapLocation(userLocation)
-                    mapMarker?.showInfoWindow()
-                }
+            .build()
+        val onCallback = object : LocationCallback() {}
+        fusedLocationClient?.requestLocationUpdates(
+            locationRequest,
+            onCallback,
+            Looper.getMainLooper()
+        )
+        lastLocation?.addOnSuccessListener {
+            it?.let { location ->
+                val userLocation = LatLng(location.latitude, location.longitude)
+                googleMap.moveCamera(userLocation)
+                googleMap.markerMapLocation(userLocation)
+                mapMarker?.showInfoWindow()
             }
-        } else {
-            activityResultLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
         }
     }
 

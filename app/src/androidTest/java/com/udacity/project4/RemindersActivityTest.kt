@@ -100,6 +100,8 @@ class RemindersActivityTest :
         insertTextHideKeyBoard(R.id.reminderTitle, "Title")
         insertTextHideKeyBoard(R.id.reminderDescription, "Description")
         Espresso.onView(ViewMatchers.withId(R.id.saveReminder)).perform(ViewActions.click())
+        Espresso.onView(ViewMatchers.withText(appContext.getString(R.string.err_select_location)))
+            .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
         activityScenario.close()
     }
 
