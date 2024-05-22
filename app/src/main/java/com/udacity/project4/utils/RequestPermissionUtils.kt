@@ -1,15 +1,15 @@
 package com.udacity.project4.utils
 
-import android.Manifest
 import android.Manifest.permission
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
-object RequestPermissionUtils {
-}
+fun Activity.shouldAccessLocationRationale() =
+    ActivityCompat.shouldShowRequestPermissionRationale(this, permission.ACCESS_FINE_LOCATION)
 
 fun Context.isAccessFineLocation(): Boolean {
     return ActivityCompat.checkSelfPermission(

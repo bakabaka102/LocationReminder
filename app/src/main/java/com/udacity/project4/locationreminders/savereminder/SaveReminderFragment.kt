@@ -11,7 +11,6 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingClient
@@ -40,15 +39,6 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
     private lateinit var mContext: Context
     private lateinit var reminderDataItem: ReminderDataItem
     private val permissionLauncherPostNotify =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-                activity?.let { ToastUtils.showToast(it, "Notification is granted.") }
-            } else {
-                activity?.let { ToastUtils.showToast(it, "Need permission notification.") }
-            }
-        }
-
-    private val permissionLauncherTurnOnGPS =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
                 activity?.let { ToastUtils.showToast(it, "Notification is granted.") }
@@ -209,7 +199,12 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
                     LogUtils.d("Add Geofence ${geofence.requestId}")
                 }
                 addOnFailureListener {
-                    LogUtils.e("Add Geofence Failure ${it.message}")
+                    activity?.let { it1 ->
+                        ToastUtils.showToast(
+                            it1,
+                            "Failed to add location!!! Try again later!"
+                        )
+                    }
                 }
             }
         }
@@ -238,11 +233,7 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
             else -> REQUEST_CODE_33
         }
         LogUtils.d("Request foreground only location permission")
-        ActivityCompat.requestPermissions(
-            mContext as Activity,
-            permissions.toTypedArray(),
-            resultCode
-        )
+        requestPermissions(permissions.toTypedArray(), resultCode)
     }
 
 }
