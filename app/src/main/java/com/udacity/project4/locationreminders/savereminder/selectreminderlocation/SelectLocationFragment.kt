@@ -8,12 +8,9 @@ import android.os.Looper
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -34,35 +31,35 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.LogUtils
+import com.udacity.project4.utils.ToastUtils
+import com.udacity.project4.utils.isAccessCoarseLocation
 import com.udacity.project4.utils.isAccessFineLocation
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
-import com.udacity.project4.utils.shouldAccessLocationRationale
 import org.koin.android.ext.android.inject
 import java.util.Locale
 
 class SelectLocationFragment : BaseFragment<FragmentSelectLocationBinding>(), OnMapReadyCallback {
 
+    private lateinit var googleMap: GoogleMap
+    private var mapMarker: Marker? = null
+    private val permissionAccessLocation =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                enableMyLocation()
+            } else {
+                activity?.let {
+                    ToastUtils.showToast(
+                        it,
+                        context?.getText(R.string.error_location_required).toString(),
+                    )
+                }
+            }
+        }
+
     // Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
     override fun layoutViewDataBinding(): Int = R.layout.fragment_select_location
 
-    private lateinit var googleMap: GoogleMap
-    private var mapMarker: Marker? = null
-    private val activityResultLauncher: ActivityResultLauncher<Array<String>> =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true &&
-                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-            ) {
-                return@registerForActivityResult
-            } else {
-                showDialogRequestPermission()
-            }
-            if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) &&
-                !shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
-            ) {
-                showDialogRequestPermission()
-            }
-        }
 
     private val mMenuProvider = object : MenuProvider {
         override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -95,6 +92,7 @@ class SelectLocationFragment : BaseFragment<FragmentSelectLocationBinding>(), On
 
     companion object {
         const val DEFAULT_ZOOM_MAP_LEVEL = 16F
+        const val REQUEST_LOCATION_PERMISSION = 1001
     }
 
     override fun initData(data: Bundle?) {
@@ -125,9 +123,11 @@ class SelectLocationFragment : BaseFragment<FragmentSelectLocationBinding>(), On
     }
 
     private fun onLocationSelected() {
-        _viewModel.latitude.value = mapMarker?.position?.latitude
-        _viewModel.longitude.value = mapMarker?.position?.longitude
-        _viewModel.reminderSelectedLocationStr.value = mapMarker?.title
+        mapMarker?.let { marker ->
+            _viewModel.latitude.value = marker.position.latitude
+            _viewModel.longitude.value = marker.position.longitude
+            _viewModel.reminderSelectedLocationStr.value = marker.title
+        }
         _viewModel.navigationCommand.value = NavigationCommand.Back
     }
 
@@ -136,27 +136,17 @@ class SelectLocationFragment : BaseFragment<FragmentSelectLocationBinding>(), On
         googleMap.setMapStyle()
         googleMap.setMapLongClick()
         googleMap.setPoiClick()
-        if (activity?.isAccessFineLocation() == true) {
-            accessCurrentLocation()
-        } else {
-            showDialogRequestPermission()
-        }
+        enableMyLocation()
     }
 
-    private fun showDialogRequestPermission() {
-        if (requireActivity().shouldAccessLocationRationale()) {
-            AlertDialog.Builder(requireActivity())
-                .setTitle(R.string.location_permission)
-                .setMessage(R.string.permission_denied_explanation)
-                .setPositiveButton("OK") { _, _ ->
-                    activityResultLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
-                }
-                .create()
-                .show()
-
-        }/* else {
-            activityResultLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
-        }*/
+    @SuppressLint("MissingPermission")
+    private fun enableMyLocation() {
+        if (activity?.isAccessFineLocation() == true || activity?.isAccessCoarseLocation() == true) {
+            accessCurrentLocation()
+            return
+        } else {
+            permissionAccessLocation.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
     }
 
     private fun GoogleMap.moveCamera(userLocation: LatLng, zoom: Float = DEFAULT_ZOOM_MAP_LEVEL) {
@@ -166,11 +156,9 @@ class SelectLocationFragment : BaseFragment<FragmentSelectLocationBinding>(), On
     @SuppressLint("MissingPermission")
     private fun accessCurrentLocation() {
         googleMap.isMyLocationEnabled = true
-        val fusedLocationClient: FusedLocationProviderClient? =
-            activity?.let {
-                LocationServices.getFusedLocationProviderClient(it)
-            }
-        val lastLocation = fusedLocationClient?.lastLocation
+        val fusedLocationClient = activity?.let {
+            LocationServices.getFusedLocationProviderClient(it)
+        }
         val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
             .setWaitForAccurateLocation(false)
             .setMinUpdateIntervalMillis(3000)
@@ -182,7 +170,7 @@ class SelectLocationFragment : BaseFragment<FragmentSelectLocationBinding>(), On
             onCallback,
             Looper.getMainLooper()
         )
-        lastLocation?.addOnSuccessListener {
+        fusedLocationClient?.lastLocation?.addOnSuccessListener {
             it?.let { location ->
                 val userLocation = LatLng(location.latitude, location.longitude)
                 googleMap.moveCamera(userLocation)

@@ -12,15 +12,22 @@ fun Activity.shouldAccessLocationRationale() =
     ActivityCompat.shouldShowRequestPermissionRationale(this, permission.ACCESS_FINE_LOCATION)
 
 fun Context.isAccessFineLocation(): Boolean {
-    return ActivityCompat.checkSelfPermission(
+    return ContextCompat.checkSelfPermission(
         this,
         permission.ACCESS_FINE_LOCATION
     ) == PackageManager.PERMISSION_GRANTED
 }
 
+fun Context.isAccessCoarseLocation(): Boolean {
+    return ContextCompat.checkSelfPermission(
+        this,
+        permission.ACCESS_COARSE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
+}
+
 fun Context.isBackgroundLocationEnable(): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        ActivityCompat.checkSelfPermission(
+        ContextCompat.checkSelfPermission(
             this, permission.ACCESS_BACKGROUND_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
     } else {
@@ -41,7 +48,7 @@ fun Context.isPermissionLocationGranted(): Boolean {
 
 
 fun Context.isPostNotificationEnable(): Boolean {
-    return ActivityCompat.checkSelfPermission(
+    return ContextCompat.checkSelfPermission(
         this,
         permission.POST_NOTIFICATIONS
     ) == PackageManager.PERMISSION_GRANTED
