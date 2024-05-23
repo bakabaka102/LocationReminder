@@ -4,9 +4,12 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth
+import com.udacity.project4.locationreminders.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.FakeDataSource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.pauseDispatcher
+import kotlinx.coroutines.test.resumeDispatcher
 import kotlinx.coroutines.test.runTest
 import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
@@ -27,6 +30,10 @@ class RemindersListViewModelTest : TestWatcher() {
     @get:Rule
     var instantExecutorRule = InstantTaskExecutorRule()
 
+    @ExperimentalCoroutinesApi
+    @get:Rule
+    var mainCoroutineRule = MainCoroutineRule()
+
     @Before
     fun initDataAndConfig() {
         viewModel =
@@ -35,8 +42,10 @@ class RemindersListViewModelTest : TestWatcher() {
 
     @Test
     fun loadingIcon_Task() = TestScope().runTest {
+        mainCoroutineRule.pauseDispatcher()
         viewModel?.loadReminders()
         MatcherAssert.assertThat(viewModel?.showLoading?.value, Matchers.`is`(true))
+        mainCoroutineRule.resumeDispatcher()
         MatcherAssert.assertThat(viewModel?.showLoading?.value, Matchers.`is`(false))
     }
 

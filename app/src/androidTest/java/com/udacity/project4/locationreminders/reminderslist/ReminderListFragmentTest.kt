@@ -90,17 +90,12 @@ class ReminderListFragmentTest {
 
     @Test
     fun navigationScreen() {
-        val navController = Mockito.mock(NavController::class.java)
         val scenario = launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
+        val navController = Mockito.mock(NavController::class.java)
         scenario.onFragment {
-            it.view?.let { view ->
-                Navigation.setViewNavController(view, navController)
-            }
-            onView(withId(R.id.addReminderFAB)).perform(click())
-
-            verify(navController).navigate(
-                ReminderListFragmentDirections.toSaveReminder()
-            )
+            it.view?.let { view -> Navigation.setViewNavController(view, navController) }
         }
+        onView(withId(R.id.addReminderFAB)).perform(click())
+        verify(navController).navigate(ReminderListFragmentDirections.toSaveReminder())
     }
 }
