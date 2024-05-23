@@ -92,7 +92,6 @@ class SelectLocationFragment : BaseFragment<FragmentSelectLocationBinding>(), On
 
     companion object {
         const val DEFAULT_ZOOM_MAP_LEVEL = 16F
-        const val REQUEST_LOCATION_PERMISSION = 1001
     }
 
     override fun initData(data: Bundle?) {

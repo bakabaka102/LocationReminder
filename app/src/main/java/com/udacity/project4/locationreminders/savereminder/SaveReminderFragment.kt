@@ -48,6 +48,55 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
             }
         }
 
+    private val permissionLauncherAccessLocation =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                activity?.let { ToastUtils.showToast(it, "ACCESS_FINE_LOCATION") }
+            } else {
+                activity?.let { ToastUtils.showToast(it, "ACCESS_FINE_LOCATION denied") }
+            }
+        }
+
+    private val permissionLauncherAccessBgLocation =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                activity?.let { ToastUtils.showToast(it, "ACCESS_BACKGROUND_LOCATION") }
+            } else {
+                activity?.let { ToastUtils.showToast(it, "ACCESS_BACKGROUND_LOCATION denied") }
+            }
+        }
+
+    private val permissionLauncherLocation =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { mapOfPermissions ->
+            mapOfPermissions.forEach { (key, granted) ->
+                when (key) {
+                    Manifest.permission.ACCESS_FINE_LOCATION -> if (granted) {
+                        activity?.let {
+                            ToastUtils.showToast(it, "ACCESS_FINE_LOCATION")
+                        }
+                    } else {
+                        activity?.let {
+                            ToastUtils.showToast(it, "Need permission Access location to use")
+                        }
+                        permissionLauncherAccessLocation.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    }
+
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION -> if (granted) {
+                        activity?.let {
+                            ToastUtils.showToast(it, "ACCESS_BACKGROUND_LOCATION")
+                        }
+                    } else {
+                        activity?.let {
+                            ToastUtils.showToast(it, "Need permission background location to use")
+                        }
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            permissionLauncherAccessBgLocation.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                        }
+                    }
+                }
+            }
+        }
+
     private val resultLauncherGPS =
         registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -56,12 +105,8 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
         }
 
     companion object {
-        const val REQUEST_TURN_DEVICE_LOCATION_ON = 1001
         const val GEOFENCE_RADIUS = 100f
         const val ACTION_GEOFENCE_EVENT = "geofence.action.ACTION_GEOFENCE_EVENT"
-        const val REQUEST_CODE_29 = 29
-        const val REQUEST_CODE_33 = 33
-
     }
 
     override fun onAttach(context: Context) {
@@ -93,7 +138,6 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
                 permissionLauncherPostNotify.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
-        //permissionLauncherTurnOnGPS.launch()
     }
 
     override fun initActions() {
@@ -121,13 +165,6 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
 
     override fun initObservers() {
     }
-
-    /*override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK) {
-            checkDeviceLocationSettingsAndStartGeofence(dataItem = _viewModel.getReminderDataItem())
-        }
-    }*/
 
     private fun checkPermissionsAndAddGeofencing() {
         if (activity?.isAccessFineLocation() == true && activity?.isBackgroundLocationEnable() == true) {
@@ -219,16 +256,10 @@ class SaveReminderFragment : BaseFragment<FragmentSaveReminderBinding>() {
 
     private fun requestForegroundAndBackgroundLocationPermissions() {
         val permissions = mutableListOf(Manifest.permission.ACCESS_FINE_LOCATION)
-        val resultCode = when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
-                permissions.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                REQUEST_CODE_29
-            }
-
-            else -> REQUEST_CODE_33
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            permissions.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
         }
         LogUtils.d("Request foreground, background location permission")
-        requestPermissions(permissions.toTypedArray(), resultCode)
+        permissionLauncherLocation.launch(permissions.toTypedArray())
     }
-
 }
