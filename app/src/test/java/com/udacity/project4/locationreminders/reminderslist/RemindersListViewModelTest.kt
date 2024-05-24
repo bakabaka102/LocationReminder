@@ -6,6 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth
 import com.udacity.project4.locationreminders.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.FakeDataSource
+import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.pauseDispatcher
@@ -26,6 +27,12 @@ class RemindersListViewModelTest : TestWatcher() {
 
     private var viewModel: RemindersListViewModel? = null
     private var dataSourceTest: FakeDataSource = FakeDataSource()
+    private val dataTest1 = ReminderDTO(
+        "Data Title 1", "Data description 1", "Data location 1", 123.0, 123.0
+    )
+    private val dataTest2 = ReminderDTO(
+        "Data Title 2", "Data description 2", "Data location 2", 456.0, 456.0
+    )
 
     @get:Rule
     var instantExecutorRule = InstantTaskExecutorRule()
@@ -57,10 +64,14 @@ class RemindersListViewModelTest : TestWatcher() {
     }
 
     @Test
-    fun loadingDataSuccess() = TestScope().runTest {
-        dataSourceTest.deleteAllReminders()
+    fun testSaveLoadingData() = TestScope().runTest  {
+        mainCoroutineRule.pauseDispatcher()
+        dataSourceTest.setIsReturnError(false)
+        dataSourceTest.saveReminder(dataTest1)
         viewModel?.loadReminders()
-        Truth.assertThat(viewModel?.showNoData?.value).isEqualTo(true)
+        Truth.assertThat(viewModel?.showLoading?.value).isTrue()
+        mainCoroutineRule.resumeDispatcher()
+        Truth.assertThat(viewModel?.showLoading?.value).isFalse()
     }
 
     @Test
